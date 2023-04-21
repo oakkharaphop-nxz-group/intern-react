@@ -91,6 +91,16 @@ function ListStudent() {
       setNewBirthDate("");
   }
 
+  const deleteStudent = async (id) => {
+    const response = await fetch(`http://localhost:8080/students/${id}`, {
+      method: "DELETE",
+    });
+  
+    if (response.ok) {
+      fetchData();
+    }
+  }
+
   const pageNumbers = [];
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
@@ -125,6 +135,7 @@ function ListStudent() {
               <td>{student.birthDate}</td>
               <td>
                 <button onClick={() => updateStudent(student.id)}>Edit</button>
+                <button onClick={() => deleteStudent(student.id)}>Delete</button>
               </td>
             </tr>
           ))}
