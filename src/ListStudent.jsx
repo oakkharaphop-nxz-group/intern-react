@@ -8,6 +8,10 @@ function ListStudent() {
   const [searchName, setSearchName] = useState("");
   const [searchLastName, setSearchLastName] = useState("");
 
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
+  const [newBirthDate, setNewBirthDate] = useState("");
+
   useEffect(() => {
     async function fetchData() {
       const response = await fetch(`http://localhost:8080/students/?page=${pageNumber}&name=${searchName}&lastname=${searchLastName}`);
@@ -60,6 +64,33 @@ function ListStudent() {
     }
   }
 
+  const addStudent = async () => {
+    if (!newFirstName || !newLastName || !newBirthDate) {
+      alert("Please enter valid values for first name , last name and birth date");
+      return;
+    }
+  
+    const body = { firstName: newFirstName, lastName: newLastName, birthDate: newBirthDate };
+  
+    const response = await fetch(`http://localhost:8080/students/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(errorData);
+      return;
+    }
+    
+      setNewFirstName("");
+      setNewLastName("");
+      setNewBirthDate("");
+  }
+
   const pageNumbers = [];
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
@@ -93,7 +124,7 @@ function ListStudent() {
               <td>{student.lastName}</td>
               <td>{student.birthDate}</td>
               <td>
-              <button onClick={() => updateStudent(student.id)}>Edit</button>
+                <button onClick={() => updateStudent(student.id)}>Edit</button>
               </td>
             </tr>
           ))}
@@ -107,6 +138,25 @@ function ListStudent() {
           </button>
         ))}
         <button onClick={nextPage} disabled={pageNumber === totalPages}>Next Page</button>
+      </div>
+      <div>
+        <h2>Add New Student</h2>
+
+
+          <label>
+            First Name:
+            <input type="text" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} />
+          </label>
+          <label>
+            Last Name:
+            <input type="text" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} />
+          </label>
+          <label>
+            Birth Date:
+            <input type="text" value={newBirthDate} onChange={(e) => setNewBirthDate(e.target.value)} />
+          </label>
+          <button onClick={addStudent} type="submit">Add Student</button>
+
       </div>
     </div>
   );
