@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import {getStudent} from './services/Student'
+import UpdateStudentForm from "./component/UpdateStudentForm";
+import AddStudentForm from "./component/AddStudentForm";
 import './ListStudent.css'
 
 function ListStudent() {
@@ -12,16 +15,24 @@ function ListStudent() {
   const [newLastName, setNewLastName] = useState("");
   const [newBirthDate, setNewBirthDate] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch(`http://localhost:8080/students/?page=${pageNumber}&name=${searchName}&lastname=${searchLastName}`);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState(null);
 
-      const data = await response.json();
-      setStudents(data.students);
-      setTotalPages(data.totalPages);
-    }
+  useEffect(() => {
+
     fetchData();
-  }, [pageNumber, searchName, searchLastName]);
+  }, [pageNumber, searchName, searchLastName,students]);
+
+
+  async function fetchData() {
+    //const response = await fetch(`http://localhost:8080/students/?page=${pageNumber}&name=${searchName}&lastname=${searchLastName}`);
+
+    const data = await getStudent(pageNumber,searchName,searchLastName);
+    setStudents(data.students);
+    setTotalPages(data.totalPages);
+  };
+
+  
 
   const nextPage = () => {
     setPageNumber(pageNumber + 1);
@@ -39,7 +50,7 @@ function ListStudent() {
     setPageNumber(1);
   };
 
-  const updateStudent = async (id) => {
+  /*const updateStudent = async (id) => {
     const firstName = window.prompt("Enter new first name");
     const lastName = window.prompt("Enter new last name");
     const birthDate = window.prompt("Enter new birth date");
@@ -62,7 +73,7 @@ function ListStudent() {
     if (response.ok) {
       fetchData();
     }
-  }
+  }*/
 
   const addStudent = async () => {
     if (!newFirstName || !newLastName || !newBirthDate) {
@@ -101,6 +112,15 @@ function ListStudent() {
     }
   }
 
+  const handleEdit = (id) => {
+    setIsEditing(true);
+    setEditingStudentId(id);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditingStudentId(null);
+  };
   const pageNumbers = [];
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
@@ -134,7 +154,22 @@ function ListStudent() {
               <td>{student.lastName}</td>
               <td>{student.birthDate}</td>
               <td>
-                <button onClick={() => updateStudent(student.id)}>Edit</button>
+
+              {editingStudentId === student.id ? (
+        <div>
+          
+          <UpdateStudentForm id={editingStudentId} fetchData={() => fetchData()} setIsEditing={setIsEditing} />
+          
+
+          <button onClick={handleCancel}>Cancel</button>
+        </div>
+      ) : (
+        <div>
+          <p>{student.firstName} {student.lastName} - {student.birthDate}</p>
+          <button onClick={() => handleEdit(student.id)}>Edit</button>
+        </div>
+      )}
+
                 <button onClick={() => deleteStudent(student.id)}>Delete</button>
               </td>
             </tr>
@@ -150,6 +185,10 @@ function ListStudent() {
         ))}
         <button onClick={nextPage} disabled={pageNumber === totalPages}>Next Page</button>
       </div>
+
+      <AddStudentForm fetchData={fetchData} />
+      
+      
       <div>
         <h2>Add New Student</h2>
 
